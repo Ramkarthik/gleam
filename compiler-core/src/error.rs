@@ -291,6 +291,9 @@ file_names.iter().map(|x| x.as_str()).join(", "))]
     #[error("The modules {unfinished:?} contain todo expressions and so cannot be published")]
     CannotPublishTodo { unfinished: Vec<EcoString> },
 
+    #[error("The modules {empty_modules:?} are empty and so cannot be published")]
+    CannotPublishEmptyModule { empty_modules: Vec<EcoString> },
+
     #[error("The modules {unfinished:?} contain internal types in their public API so cannot be published")]
     CannotPublishLeakedInternalType { unfinished: Vec<EcoString> },
 
@@ -977,6 +980,25 @@ be removed.
 Please remove them and try again.
 ",
                     unfinished
+                        .iter()
+                        .map(|name| format!("  - {}", name.as_str()))
+                        .join("\n")
+                ),
+                level: Level::Error,
+                hint: None,
+                location: None,
+            }],
+
+            Error::CannotPublishEmptyModule { empty_modules } => vec![Diagnostic {
+                title: "Cannot publish empty modules".into(),
+                text: format!(
+                    "These modules are empty and cannot be published:
+
+{}
+
+Please remove them and try again.
+",
+                    empty_modules
                         .iter()
                         .map(|name| format!("  - {}", name.as_str()))
                         .join("\n")

@@ -335,6 +335,20 @@ fn do_build_hex_tarball(paths: &ProjectPaths, config: &mut PackageConfig) -> Res
         return Err(Error::CannotPublishTodo { unfinished });
     }
 
+    // If any of the modules in the package is empty then refuse to
+    // publish as the package is not yet finished.
+    let empty_modules = built
+        .root_package
+        .modules
+        .iter()
+        .filter(|module| module.ast.type_info.values.is_empty())
+        .map(|module| module.name.clone())
+        .sorted()
+        .collect_vec();
+    if !empty_modules.is_empty() {
+        return Err(Error::CannotPublishEmptyModule { empty_modules });
+    }
+
     // TODO: If any of the modules in the package contain a leaked internal type then
     // refuse to publish as the package is not yet finished.
     // We need to move aliases in to the type system first.
